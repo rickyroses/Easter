@@ -4,7 +4,7 @@
 // Establece la conexión con el servidor Socket.IO.
 // Cambia la URL si tu servidor no está corriendo localmente en el puerto 3000.
 console.log("Attempting to connect to Socket.IO server...");
-const socket = io('https://easter-xjd8.onrender.com/'); // O la URL de tu servidor desplegado: 'https://your-backend-url.com'
+const socket = io('http://localhost:10000'); // O la URL de tu servidor desplegado: 'https://your-backend-url.com'
 
 // --- 2. Referencias a Elementos del DOM ---
 // Obtiene referencias a los elementos HTML que necesitaremos manipular mediante JavaScript.
@@ -288,9 +288,16 @@ socket.on('gameOver', (finalResults) => {
  */
 function displayQuestion(questionData) {
     console.log("Displaying question:", questionData.index);
-    // Actualiza los textos en pantalla.
-    questionTextElement.textContent = questionData.text; // Asume texto en el idioma preferido.
-    questionCounterElement.textContent = `Question ${questionData.index + 1}/${questionData.totalQuestions}`;
+    // Mostrar ambos textos (inglés y español) usando innerHTML para permitir el <br>
+    // Puedes ajustar el formato como prefieras (ej: con un <hr> o diferente tamaño)
+    if (questionData.text_en && questionData.text_es) {
+        questionTextElement.innerHTML = `${questionData.text_en}<br><hr style="border-top: 1px solid #eee;">${questionData.text_es}`;
+   } else {
+        // Si por alguna razón solo viene uno, muestra el que esté disponible
+        questionTextElement.textContent = questionData.text_en || questionData.text_es || 'Error: Question text missing.';
+   }
+
+   questionCounterElement.textContent = `Question ${questionData.index + 1}/${questionData.totalQuestions}`;
     themeNameElement.textContent = questionData.theme;
 
     // Limpia los botones de opciones de la pregunta anterior.
@@ -298,12 +305,12 @@ function displayQuestion(questionData) {
     // Crea un nuevo botón para cada opción recibida.
     questionData.options.forEach(option => {
         const button = document.createElement('button');
-        button.classList.add('option-button'); // Clase para estilos generales.
-        // Guarda el identificador de la opción (A, B, C, D) en el dataset para usarlo al hacer clic.
+        button.classList.add('option-button');
         button.dataset.optionId = option.id;
-        button.textContent = `${option.id}. ${option.text}`; // Texto del botón.
-        button.onclick = handleAnswerClick; // Asigna la función que maneja el clic.
-        optionsContainer.appendChild(button); // Añade el botón al contenedor.
+        // Asume que option.text ya contiene "Texto EN / Texto ES" si aplica
+        button.textContent = `${option.id}. ${option.text}`;
+        button.onclick = handleAnswerClick;
+        optionsContainer.appendChild(button);
     });
 }
 
